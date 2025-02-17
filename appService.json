@@ -1,0 +1,50 @@
+{
+    "label": "Database",
+    "name": "database",
+    "apiVersion": "v1",
+    "internal": false,
+    "proxy": true,
+    "configurationType": "GLOBAL",
+    "deployment": {
+        "profiles":[
+            {
+                "name": "default",
+                "label": "Default",
+                "memory": 256,
+                "description": "Default configuration"
+            }
+        ],
+        "allowMultipleInstances": false
+    },
+    "status": "ACTIVE",
+    "stores": [
+        {
+            "name": "datastore"
+        }
+    ],
+    "events": [],
+    "functions": [
+        {
+            "label": "Save",
+            "name": "save"
+        },
+        {
+            "label": "Find one",
+            "name": "findOne"
+        },
+        {
+            "label": "Find all",
+            "name": "findAll"
+        },
+        {
+            "label": "Delete one",
+            "name": "deleteOne"
+        },
+        {
+            "label": "Delete all",
+            "name": "deleteAll"
+        }
+    ],
+    "scripts":[],
+    "configuration":[]
+}
