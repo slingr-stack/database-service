@@ -5,7 +5,6 @@ import io.slingr.services.framework.annotations.*;
 import io.slingr.services.services.AppLogs;
 import io.slingr.services.services.datastores.DataStore;
 import io.slingr.services.services.datastores.DataStoreResponse;
-import io.slingr.services.services.exchange.Parameter;
 import io.slingr.services.utils.Json;
 import io.slingr.services.utils.Strings;
 import io.slingr.services.ws.exchange.FunctionRequest;
@@ -25,6 +24,9 @@ public class Database extends Service {
     private static final Logger logger = LoggerFactory.getLogger(Database.class);
 
     private static final String ID = "_id";
+    private static final String APP = "app";
+    private static final String ENV = "env";
+    private static final String EXTERNAL_ID = "externalId";
     private static final String DOCUMENT = "document";
     private static final String COLLECTION = "collection";
     private static final String DEFAULT_COLLECTION = "default";
@@ -51,21 +53,26 @@ public class Database extends Service {
                 .set(ID, Strings.randomUUIDString())
                 .set(DOCUMENT, document)
                 .set(COLLECTION, collection);
-        return datastore.save(documentJson);
+        final Json saved = datastore.save(documentJson);
+        saved.set(EXTERNAL_ID, documentJson.string(ID));
+        saved.remove(ID);
+        saved.remove(APP);
+        saved.remove(ENV);
+        return saved;
     }
 
     @ServiceFunction(name = "findOne")
     public Json findOne(FunctionRequest request) {
         logger.info("findOne received");
         Json params = request.getJsonParams();
-        if (!params.contains(ID)) {
-            return Json.map().set("error", "Parameter '_id' is required");
+        if (!params.contains(EXTERNAL_ID)) {
+            return Json.map().set("error", "Parameter 'externalId' is required");
         }
-        String id = params.string(ID);
+        String id = params.string(EXTERNAL_ID);
         String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
 
         Json query = Json.map()
-                .set(ID, id)
+                .set(EXTERNAL_ID, id)
                 .set(COLLECTION, collection);
 
         DataStoreResponse result = datastore.find(query);
