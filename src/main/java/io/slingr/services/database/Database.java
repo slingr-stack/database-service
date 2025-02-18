@@ -54,29 +54,17 @@ public class Database extends Service {
                 .set(DOCUMENT, document)
                 .set(COLLECTION, collection);
         final Json saved = datastore.save(documentJson);
-        saved.set(EXTERNAL_ID, documentJson.string(ID));
-        saved.remove(ID);
-        saved.remove(APP);
-        saved.remove(ENV);
+        Database.formatRecord(saved, documentJson);
         return saved;
     }
 
     @ServiceFunction(name = "findOne")
     public Json findOne(FunctionRequest request) {
         logger.info("findOne received");
-        Json params = request.getJsonParams();
-        if (!params.contains(EXTERNAL_ID)) {
-            return Json.map().set("error", "Parameter 'externalId' is required");
-        }
-        String id = params.string(EXTERNAL_ID);
-        String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
-
-        Json query = Json.map()
-                .set(EXTERNAL_ID, id)
-                .set(COLLECTION, collection);
-
+        final Json query = Database.formatRequest(request);
         DataStoreResponse result = datastore.find(query);
         if (result != null && result.getTotal() > 0) {
+            Database.formatRecord(result.getItems().get(0), query);
             return result.getItems().get(0);
         }
         return Json.map();
@@ -87,11 +75,12 @@ public class Database extends Service {
         logger.info("findAll received");
         Json params = request.getJsonParams();
         String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
-
         Json query = Json.map().set(COLLECTION, collection);
         DataStoreResponse result = datastore.find(query);
-
         if (result != null) {
+            for (Json item : result.getItems()) {
+                Database.formatRecord(item, item);
+            }
             return Json.map()
                     .set("total", result.getTotal())
                     .set("items", result.getItems());
@@ -102,21 +91,14 @@ public class Database extends Service {
     @ServiceFunction(name = "deleteOne")
     public Json deleteOne(FunctionRequest request) {
         logger.info("deleteOne received");
-        Json params = request.getJsonParams();
-        if (!params.contains(ID)) {
-            return Json.map().set("error", "Parameter '_id' is required");
+        final Json found = findOne(request);
+        if (found.isEmpty()) {
+            return Json.map().set("message", "No document found to delete");
         }
-        String id = params.string(ID);
-        String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
-
-        Json query = Json.map()
-                .set(ID, id)
-                .set(COLLECTION, collection);
+        final Json query = Database.formatRequest(request);
         boolean result = datastore.remove(query);
-
         if (result) {
-            return Json.map()
-                    .set("message", "Document deleted successfully");
+            return Json.map().set("message", "Document deleted successfully");
         }
         return Json.map().set("message", "No document found to delete");
     }
@@ -126,14 +108,72 @@ public class Database extends Service {
         logger.info("deleteAll received");
         Json params = request.getJsonParams();
         String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
-
         Json query = Json.map().set(COLLECTION, collection);
         boolean result = datastore.remove(query);
-
         if (result) {
-            return Json.map()
-                    .set("message", "Documents deleted successfully");
+            return Json.map().set("message", "Documents deleted successfully");
         }
         return Json.map().set("message", "No documents found to delete");
+    }
+
+    @ServiceFunction(name = "count")
+    public Json count(FunctionRequest request) {
+        logger.info("count received");
+        final Json params = request.getJsonParams();
+        if (!params.contains(EXTERNAL_ID)) {
+            return Json.map().set("error", "Parameter 'externalId' is required");
+        }
+        String externalId = params.string(EXTERNAL_ID);
+        String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
+        Json filter = Json.map().set(EXTERNAL_ID, externalId).set(COLLECTION, collection);
+        try {
+            int total = datastore.count(filter);
+            return Json.map().set("total", total);
+        } catch (Exception ex) {
+            return Json.map().set("error", ex.getMessage());
+        }
+    }
+
+    @ServiceFunction(name = "update")
+    public Json update(FunctionRequest request) {
+        logger.info("update received");
+        final Json params = request.getJsonParams();
+        if (!params.contains(EXTERNAL_ID) || !params.contains("update")) {
+            return Json.map().set("error", "Parameters 'externalId' and 'update' are required");
+        }
+        String externalId = params.string(EXTERNAL_ID);
+        String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
+        Json query = Json.map().set(EXTERNAL_ID, externalId).set(COLLECTION, collection);
+        DataStoreResponse result = datastore.find(query);
+        if (result == null || result.getTotal() == 0) {
+            return Json.map().set("message", "No document found matching externalId");
+        }
+        Json documentToUpdate = result.getItems().get(0);
+        Json updateData = params.json("update");
+        for (String key : updateData.keys()) {
+            documentToUpdate.set(key, updateData.string(key));
+        }
+        Json updated = datastore.update(externalId, documentToUpdate);
+        formatRecord(updated, updated);
+        return updated;
+    }
+
+    private static Json formatRequest(FunctionRequest request) {
+        Json params = request.getJsonParams();
+        if (!params.contains(EXTERNAL_ID)) {
+            return Json.map().set("error", "Parameter 'externalId' is required");
+        }
+        String id = params.string(EXTERNAL_ID);
+        String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
+        return Json.map()
+                .set(EXTERNAL_ID, id)
+                .set(COLLECTION, collection);
+    }
+
+    private static void formatRecord(Json saved, Json documentJson) {
+        saved.set(EXTERNAL_ID, documentJson.string(ID));
+        saved.remove(ID);
+        saved.remove(APP);
+        saved.remove(ENV);
     }
 }

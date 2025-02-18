@@ -41,6 +41,14 @@
         {
             "label": "Delete all",
             "name": "deleteAll"
+        },
+        {
+            "label": "Count",
+            "name": "count"
+        },
+        {
+            "label": "Update one",
+            "name": "updateOne"
         }
     ],
     "configuration":[]

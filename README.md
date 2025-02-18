@@ -31,7 +31,7 @@ log(JSON.stringify(svc.database.save({
 
 ```js
 log(JSON.stringify(svc.database.findOne({
-    _id: "unique-document-id",
+    externalId: "unique-document-id",
     collection: "test1" // Optional: defaults to "default" if not provided
 })));
 ```
@@ -48,7 +48,7 @@ log(JSON.stringify(svc.database.findAll({
 
 ```js
 log(JSON.stringify(svc.database.deleteOne({
-    _id: "unique-document-id",
+    externalId: "unique-document-id",
     collection: "test1" // Optional: defaults to "default" if not provided
 })));
 ```

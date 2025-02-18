@@ -7,8 +7,8 @@
     <relativePath>../pom.xml/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>proxy</artifactId>
-  <name>SLINGR - Proxy service</name>
+  <artifactId>database</artifactId>
+  <name>SLINGR - Database service</name>
   <version>1.0-SNAPSHOT</version>
   <description>Default component to manage a connection from your local to a Slingr service of the Slingr platform</description>
   <repositories>
@@ -21,6 +21,6 @@
   <properties>
     <build.main-class>io.slingr.services.database.Runner</build.main-class>
     <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
-    <slingr.slingr-service.version>1.5.1</slingr.slingr-service.version>
+    <slingr.slingr-service.version>1.6.3</slingr.slingr-service.version>
   </properties>
 </project>
