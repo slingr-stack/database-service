@@ -6,7 +6,7 @@
         <artifactId>slingr-services-builder</artifactId>
         <version>1.0.0</version>
     </parent>
-    <artifactId>proxy</artifactId>
+    <artifactId>database</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>SLINGR - Database service</name>
     <description>Default component to manage a connection from your local to a Slingr service of the Slingr platform</description>
