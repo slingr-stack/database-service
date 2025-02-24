@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Service used as a proxy to services on the developer environment
+ * Service used to save data on a database
  * <p>
  * Created by agreggio on 23/10/23.
  */
@@ -154,7 +154,7 @@ public class Database extends Service {
             documentToUpdate.set(key, updateData.string(key));
         }
         Json updated = datastore.update(externalId, documentToUpdate);
-        formatRecord(updated, updated);
+        Database.formatRecord(updated, updated);
         return updated;
     }
 
