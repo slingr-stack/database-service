@@ -63,9 +63,9 @@ public class Database extends Service {
         logger.info("findOne received");
         final Json query = Database.formatRequest(request);
         DataStoreResponse result = datastore.find(query);
-        if (result != null && result.getTotal() > 0) {
-            Database.formatRecord(result.getItems().get(0), query);
-            return result.getItems().get(0);
+        if (result != null && result.total() > 0) {
+            Database.formatRecord(result.items().get(0), query);
+            return result.items().get(0);
         }
         return Json.map();
     }
@@ -78,12 +78,12 @@ public class Database extends Service {
         Json query = Json.map().set(COLLECTION, collection);
         DataStoreResponse result = datastore.find(query);
         if (result != null) {
-            for (Json item : result.getItems()) {
+            for (Json item : result.items()) {
                 Database.formatRecord(item, item);
             }
             return Json.map()
-                    .set("total", result.getTotal())
-                    .set("items", result.getItems());
+                    .set("total", result.total())
+                    .set("items", result.items());
         }
         return Json.map().set("total", 0).set("items", Json.list());
     }
@@ -145,10 +145,10 @@ public class Database extends Service {
         String collection = params.contains(COLLECTION) ? params.string(COLLECTION) : DEFAULT_COLLECTION;
         Json query = Json.map().set(EXTERNAL_ID, externalId).set(COLLECTION, collection);
         DataStoreResponse result = datastore.find(query);
-        if (result == null || result.getTotal() == 0) {
+        if (result == null || result.total() == 0) {
             return Json.map().set("message", "No document found matching externalId");
         }
-        Json documentToUpdate = result.getItems().get(0);
+        Json documentToUpdate = result.items().get(0);
         Json updateData = params.json("update");
         for (String key : updateData.keys()) {
             documentToUpdate.set(key, updateData.string(key));
