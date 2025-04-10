@@ -38,7 +38,7 @@ public class Database extends Service {
     private DataStore datastore;
 
     public void serviceStarted() {
-        logger.info(String.format("Initializing service [%s]", SERVICE_NAME));
+        logger.info("Initializing service [{}]", SERVICE_NAME);
         appLogs.info(String.format("Initializing service [%s]", SERVICE_NAME));
     }
 
@@ -64,8 +64,8 @@ public class Database extends Service {
         final Json query = Database.formatRequest(request);
         DataStoreResponse result = datastore.find(query);
         if (result != null && result.total() > 0) {
-            Database.formatRecord(result.items().get(0), query);
-            return result.items().get(0);
+            Database.formatRecord(result.items().getFirst(), query);
+            return result.items().getFirst();
         }
         return Json.map();
     }
@@ -148,7 +148,7 @@ public class Database extends Service {
         if (result == null || result.total() == 0) {
             return Json.map().set("message", "No document found matching externalId");
         }
-        Json documentToUpdate = result.items().get(0);
+        Json documentToUpdate = result.items().getFirst();
         Json updateData = params.json("update");
         for (String key : updateData.keys()) {
             documentToUpdate.set(key, updateData.string(key));
